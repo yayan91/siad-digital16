@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA Settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e3a8a">
+    
+    <title>Arsip Digital - 16</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' },
+                        slate: { 850: '#0f172a' } 
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        .card { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; transition: background-color 0.3s, border-color 0.3s; }
+        .dark .card { background: #1e293b; border-color: #334155; color: #f8fafc; }
+
+        /* Updated Input Field with Icon Padding */
+        .input-field { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; transition: 0.2s; font-size: 0.9rem; background-color: #ffffff; }
+        .dark .input-field { background-color: #0f172a; border-color: #475569; color: white; }
+        .input-field:focus { border-color: #2563eb; ring: 3px solid #eff6ff; }
+        .dark .input-field:focus { ring: 3px solid #1e3a8a; }
+        .input-with-icon { padding-left: 2.75rem; } /* Space for icon */
+
+        .btn-primary { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 12px 24px; border-radius: 10px; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-primary:active { transform: scale(0.98); }
+        
+        .btn-view { background-color: #eff6ff; color: #2563eb; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; transition: background 0.2s; }
+        .btn-view:hover { background-color: #dbeafe; }
+        .dark .btn-view { background-color: #1e3a8a; color: #bfdbfe; }
+        .dark .btn-view:hover { background-color: #172554; }
+        
+        .nav-item.active { background-color: #ffffff !important; color: #2563eb !important; font-weight: 800 !important; border-left: 5px solid #2563eb !important; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        .dark .nav-item.active { background-color: #1e293b !important; color: #60a5fa !important; }
+        .nav-item { border-left: 5px solid transparent; transition: all 0.2s; } 
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; padding: 16px; text-align: left; font-weight: 700; border-bottom: 1px solid #e2e8f0; cursor: pointer; user-select: none; }
+        .dark th { background: #0f172a; color: #94a3b8; border-color: #334155; }
+        th:hover { background: #f1f5f9; }
+        .dark th:hover { background: #1e293b; }
+        td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+        .dark td { border-color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        .dark tr:hover td { background-color: #1e293b; }
+        
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #2563eb; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-enter { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .id-card-bg { background-image: url('https://img.freepik.com/free-vector/abstract-blue-geometric-shapes-background_1035-17545.jpg'); background-size: cover; background-position: center; }
+        
+        /* Pagination Styles */
+        .page-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; transition: all 0.2s; border: 1px solid #e2e8f0; }
+        .dark .page-btn { border-color: #334155; color: #cbd5e1; }
+        .page-btn:hover:not(:disabled) { background-color: #f1f5f9; }
+        .dark .page-btn:hover:not(:disabled) { background-color: #1e293b; }
+        .page-btn.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden font-sans text-sm bg-slate-50 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+    <!-- LOGIN SCREEN -->
+    <div id="view-login" class="fixed inset-0 z-50 bg-white dark:bg-slate-900 flex flex-col md:flex-row font-inter transition-colors duration-300">
+        <div class="hidden md:flex md:w-1/2 bg-slate-900 items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-brand-600 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
+            <div class="relative z-10 text-center text-white p-12">
+                <div class="w-32 h-32 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/10 shadow-2xl backdrop-blur-sm p-6">
+                    <img src="https://drive.google.com/thumbnail?id=1Z6g-sCdw-k7W8dnw12NeagPkroLlmk-L" class="w-full h-full object-contain drop-shadow-lg">
+                </div>
+                <h1 class="text-5xl font-extrabold tracking-tight mb-4">SIAD-16 ULTIMATE</h1>
+                <p class="text-slate-300 font-light text-xl tracking-wide">Sistem Informasi Arsip Digital</p>
+            </div>
+        </div>
+        <div class="w-full md:w-1/2 flex items-center justify-center p-6 bg-white dark:bg-slate-900 relative">
+            <div class="w-full max-w-sm">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Selamat Datang</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Masuk untuk mengakses arsip digital.</p>
+                </div>
+                <form onsubmit="handleLogin(event)" class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2 ml-1">NIP / Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fas fa-user"></i></div>
+                            <input type="text" id="loginNip" class="input-field input-with-icon" placeholder="Masukkan NIP / Username" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2 ml-1">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400"><i class="fas fa-lock"></i></div>
+                            <input type="password" id="loginPass" class="input-field input-with-icon" placeholder="••••••••" required>
+                            <!-- TOGGLE PASSWORD -->
+                            <button type="button" onclick="togglePass()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-brand-500 cursor-pointer transition"><i id="iconPass" class="fas fa-eye"></i></button>
+                        </div>
+                        <!-- LUPA PASSWORD -->
+                        <div class="text-right mt-2">
+                            <button type="button" onclick="forgotPass()" class="text-xs font-bold text-brand-500 hover:text-brand-600 transition">Lupa Kata Sandi?</button>
+                        </div>
+                    </div>
+                    <button type="submit" id="btnLogin" class="btn-primary w-full py-3.5 shadow-lg">MASUK APLIKASI</button>
+                </form>
+                <p class="text-center text-xs text-slate-400 mt-10">&copy; 2026 SIAD Ultimate - UPT SPF SMP Negeri 16 Makassar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-layout" class="hidden w-full h-full relative flex transition-colors duration-300">
+        <!-- SIDEBAR -->
+        <aside class="w-[280px] bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-20 hidden md:flex border-r border-slate-800">
+            <div class="h-20 flex items-center px-6 bg-slate-950 border-b border-slate-800">
+                <img src="https://drive.google.com/thumbnail?id=1Z6g-sCdw-k7W8dnw12NeagPkroLlmk-L" class="w-8 h-8 mr-3">
+                <span class="font-extrabold text-white text-lg tracking-tight">SIAD-16</span>
+            </div>
+            <div class="p-6 pb-2">
+                <div class="flex items-center gap-4 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <img id="sideFoto" src="" class="w-10 h-10 rounded-full border-2 border-slate-600 object-cover bg-slate-700">
+                    <div class="overflow-hidden"><p id="sideNama" class="text-xs font-bold text-white truncate w-32 mb-0.5">User</p><p id="sideNip" class="text-[9px] text-slate-400 font-mono bg-slate-900 px-1.5 py-0.5 rounded inline-block">...</p></div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-item w-full text-left px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl transition flex items-center gap-3.5 mb-1"><i class="fas fa-th-large w-6 text-center"></i> Dashboard</button>
+                <button onclick="nav('upload')" id="nav-upload" class="nav-item w-full text-left px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl transition flex items-center gap-3.5 mb-1"><i class="fas fa-cloud-upload-alt w-6 text-center"></i> Upload</button>
+                <button onclick="nav('arsip')" id="nav-arsip" class="nav-item w-full text-left px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl transition flex items-center gap-3.5 mb-1"><i class="fas fa-folder-open w-6 text-center"></i> Arsip Saya</button>
+                <button onclick="nav('profil')" id="nav-profil" class="nav-item w-full text-left px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl transition flex items-center gap-3.5 mb-1"><i class="fas fa-user-tie w-6 text-center"></i> Biodata</button>
+                <button onclick="nav('idcard')" id="nav-idcard" class="nav-item w-full text-left px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl transition flex items-center gap-3.5 mb-1 text-yellow-300"><i class="fas fa-id-card w-6 text-center"></i> Kartu Digital</button>
+                <div id="menuAdmin" class="hidden mt-8 pt-4 border-t border-slate-800">
+                    <p class="px-4 text-[10px] uppercase font-bold text-slate-500 mb-2">Admin</p>
+                    <button onclick="nav('admin')" id="nav-admin" class="nav-item w-full text-left px-4 py-3.5 text-red-300 hover:bg-red-900/20 hover:text-red-200 rounded-xl transition flex items-center gap-3.5"><i class="fas fa-shield-alt w-6 text-center"></i> Control Panel</button>
+                </div>
+            </nav>
+            <div class="p-4 bg-slate-950 border-t border-slate-800">
+                <button onclick="logout()" class="w-full py-3 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:bg-red-600 hover:border-red-600 transition text-xs font-bold flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> KELUAR</button>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative transition-colors duration-300">
+            <header class="h-16 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 w-full shadow-sm transition-colors duration-300">
+                <button onclick="document.getElementById('mobileMenu').classList.remove('hidden')" class="md:hidden text-slate-600 dark:text-slate-300 p-2"><i class="fas fa-bars text-xl"></i></button>
+                <h2 class="text-lg md:text-xl font-bold text-slate-800 dark:text-white" id="headerTitle">Dashboard</h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleDark()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-yellow-400 flex items-center justify-center transition hover:scale-110"><i id="darkIcon" class="fas fa-moon"></i></button>
+                    <div class="text-right hidden md:block"><p class="text-[10px] font-bold text-slate-400 uppercase" id="currentDate">DATE</p><p class="text-xs font-bold text-brand-600 dark:text-brand-400 truncate max-w-[150px]" id="headerNama">User</p></div>
+                    <img id="headerFoto" src="" class="w-9 h-9 rounded-full border border-white dark:border-slate-600 shadow-sm bg-slate-100 object-cover">
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth">
+                <!-- DASHBOARD -->
+                <div id="page-dashboard" class="fade-enter hidden">
+                    <div class="bg-gradient-to-br from-brand-600 to-indigo-800 rounded-2xl p-8 text-white shadow-xl mb-8 relative overflow-hidden">
+                        <div class="relative z-10"><h3 class="text-3xl font-bold mb-2">Halo, <span id="dashName">Guru</span>! 👋</h3><p class="text-brand-100 text-sm max-w-lg">Selamat datang di Sistem Informasi Arsip Digital SIAD-16.</p><div class="mt-6 flex gap-3"><button onclick="nav('upload')" class="bg-white text-brand-700 px-5 py-2.5 rounded-xl text-xs font-bold shadow hover:bg-brand-50 transition"><i class="fas fa-cloud-upload-alt mr-2"></i> Upload Baru</button></div></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="card p-6 border-l-4 border-brand-500"><p class="text-xs font-bold text-slate-400 uppercase">Total Dokumen</p><h3 class="text-4xl font-extrabold text-slate-800 dark:text-white" id="stTotal">0</h3></div>
+                        <div class="card p-6 border-l-4 border-green-500"><p class="text-xs font-bold text-slate-400 uppercase">Terverifikasi</p><h3 class="text-4xl font-extrabold text-green-600" id="stVerif">0</h3></div>
+                        <div class="card p-6 border-l-4 border-yellow-500"><p class="text-xs font-bold text-slate-400 uppercase">Menunggu</p><h3 class="text-4xl font-extrabold text-yellow-600" id="stPend">0</h3></div>
+                    </div>
+                    <div class="card p-6"><h4 class="font-bold text-slate-800 dark:text-white mb-4">Statistik Dokumen per Kategori</h4><div class="h-64 relative"><canvas id="dashChart"></canvas></div></div>
+                </div>
+
+                <!-- UPLOAD -->
+                <div id="page-upload" class="fade-enter hidden max-w-4xl mx-auto">
+                    <div class="card p-8 border-t-4 border-brand-500">
+                        <h2 class="text-xl font-bold mb-6 text-slate-800 dark:text-white">Upload Dokumen Baru</h2>
+                        <form onsubmit="doUpload(event)" id="formUpload" class="space-y-6">
+                            <div><label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Kategori Utama</label><select id="upCat" onchange="loadSubCat(this.value)" class="input-field cursor-pointer" required><option value="">-- Pilih Kategori --</option></select></div>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div><label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Jenis Berkas</label><select id="upJenis" class="input-field cursor-pointer" disabled required><option value="">-- Pilih Kategori Dulu --</option></select></div>
+                                <div><label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Keterangan / Tahun</label><input type="text" id="upKet" class="input-field" placeholder="Contoh: Th. 2025" required></div>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-center cursor-pointer hover:bg-brand-50 dark:hover:bg-slate-700 hover:border-brand-300 transition" onclick="document.getElementById('upFile').click()">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-brand-500 mb-3"></i><h4 class="font-bold text-slate-700 dark:text-slate-300">Pilih File (PDF/JPG)</h4><p class="text-sm font-bold text-brand-600 dark:text-brand-400 mt-2" id="fileName">Belum ada file</p><input type="file" id="upFile" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="valFile(this)">
+                            </div>
+                            <button type="submit" id="btnUp" class="btn-primary w-full py-4 text-base shadow-xl">SIMPAN DOKUMEN</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ARSIP SAYA -->
+                <div id="page-arsip" class="fade-enter hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+                        <div><h2 class="text-2xl font-bold text-slate-800 dark:text-white">Arsip Saya</h2><p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Kelola dan pantau status dokumen anda.</p></div>
+                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+                            <!-- PAGINATION SELECT -->
+                            <select id="limitMy" onchange="changeMyLimit(this.value)" class="input-field w-24 text-xs font-bold py-2 cursor-pointer h-10">
+                                <option value="5">5 Baris</option>
+                                <option value="10" selected>10 Baris</option>
+                                <option value="20">20 Baris</option>
+                                <option value="50">50 Baris</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <select id="filterCatMy" onchange="renderMyDocs()" class="input-field w-full md:w-48 cursor-pointer text-xs font-bold h-10"><option value="">Semua Kategori</option></select>
+                            <input type="text" id="searchMy" onkeyup="renderMyDocs()" placeholder="Cari..." class="input-field w-full md:w-64 text-xs h-10">
+                        </div>
+                    </div>
+                    <div class="card overflow-hidden">
+                        <div class="overflow-x-auto min-h-[300px]">
+                            <table class="w-full">
+                                <thead><tr><th class="pl-6" onclick="sortDocs('jenis')">Dokumen <i class="fas fa-sort ml-1"></i></th><th onclick="sortDocs('kategori')">Kategori <i class="fas fa-sort ml-1"></i></th><th onclick="sortDocs('waktu')">Waktu <i class="fas fa-sort ml-1"></i></th><th class="text-center" onclick="sortDocs('status')">Status</th><th class="text-right pr-6">Aksi</th></tr></thead>
+                                <tbody id="bodyMyDocs" class="bg-white dark:bg-slate-800"></tbody>
+                            </table>
+                        </div>
+                        <div id="emptyMyDocs" class="hidden p-12 text-center text-slate-400">Data tidak ditemukan.</div>
+                        <!-- PAGINATION CONTROLS -->
+                        <div id="myDocsPag" class="p-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 items-center">
+                            <!-- JS Rendered -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROFIL -->
+                <div id="page-profil" class="fade-enter hidden max-w-5xl mx-auto">
+                    <!-- (Konten Profil Sama seperti sebelumnya) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <div class="card p-6 text-center h-full border-t-4 border-brand-500">
+                                <img id="profImg" src="" class="w-32 h-32 mx-auto rounded-full object-cover border-4 border-white dark:border-slate-600 shadow-xl bg-slate-200 mb-4">
+                                <div class="mb-4"><button onclick="document.getElementById('eFoto').click()" class="text-xs text-brand-600 dark:text-brand-400 font-bold hover:underline">Ganti Foto</button><input type="file" id="eFoto" class="hidden" accept="image/*"></div>
+                                <h3 class="text-lg font-bold text-slate-800 dark:text-white" id="dispNama">Name</h3>
+                                <p class="text-slate-500 dark:text-slate-400 text-xs font-mono bg-slate-100 dark:bg-slate-700 inline-block px-3 py-1 rounded-full mt-2" id="dispNip">...</p>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <div class="card p-8">
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-6">Edit Biodata</h4>
+                                <div class="space-y-4">
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Nama Lengkap</label><input id="eNama" class="input-field"></div>
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">NIP (Readonly)</label><input id="eNip" class="input-field bg-slate-50 dark:bg-slate-700" readonly></div>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Tempat Lahir</label><input id="eTempat" class="input-field"></div>
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Tanggal Lahir</label><input type="date" id="eTgl" class="input-field"></div>
+                                    </div>
+                                    <div class="grid md:grid-cols-3 gap-4">
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">NUPTK</label><input id="eNuptk" class="input-field"></div>
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Agama</label><select id="eAgama" class="input-field"><option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Buddha</option></select></div>
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">JK</label><select id="eJk" class="input-field"><option>Laki-laki</option><option>Perempuan</option></select></div>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Jabatan</label><input id="eJab" class="input-field"></div>
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Pangkat</label><input id="ePang" class="input-field"></div>
+                                    </div>
+                                    <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Alamat</label><textarea id="eAlamat" class="input-field h-20 resize-none"></textarea></div>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Email</label><input id="eEmail" class="input-field"></div>
+                                        <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">WhatsApp</label><input id="eWa" class="input-field"></div>
+                                    </div>
+                                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/50 mt-4">
+                                        <label class="text-[10px] font-bold text-red-500 uppercase">Ubah Password</label>
+                                        <input type="password" id="ePass" class="input-field mt-1 border-red-200 dark:border-red-900" placeholder="Kosongkan jika tidak diubah">
+                                    </div>
+                                    <button onclick="saveProfil()" id="btnSaveProf" class="btn-primary w-full py-3.5 mt-4">SIMPAN PERUBAHAN</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ID CARD -->
+                <div id="page-idcard" class="fade-enter hidden flex flex-col items-center justify-center p-4">
+                    <div class="text-center mb-6"><h2 class="text-2xl font-bold text-slate-800 dark:text-white">Kartu Identitas Digital</h2><p class="text-slate-500 dark:text-slate-400 text-sm">Resmi UPT SPF SMP Negeri 16 Makassar</p></div>
+                    <div id="cardArea" class="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl bg-white relative id-card-bg text-slate-800">
+                        <div class="h-24 bg-slate-900/90 backdrop-blur-sm p-4 flex items-center justify-between relative z-10">
+                            <div class="flex items-center gap-3"><img src="https://drive.google.com/thumbnail?id=1Z6g-sCdw-k7W8dnw12NeagPkroLlmk-L" class="w-10 h-10 drop-shadow-md"><div><h3 class="text-white font-bold text-sm tracking-wide">SMP NEGERI 16</h3><p class="text-brand-300 text-[10px] font-medium uppercase tracking-widest">Makassar</p></div></div>
+                            <div class="text-right"><div class="bg-brand-500 text-white text-[9px] font-bold px-2 py-0.5 rounded">GURU</div></div>
+                        </div>
+                        <div class="p-6 relative z-10 bg-white/80 backdrop-blur-sm h-full">
+                            <div class="flex justify-center -mt-16 mb-4"><img id="cardFoto" src="" class="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-slate-200 object-cover"></div>
+                            <div class="text-center mb-6"><h2 id="cardNama" class="text-xl font-extrabold text-slate-900 leading-tight">Nama Guru</h2><p id="cardNip" class="text-sm font-mono text-slate-600 mt-1 font-bold">NIP. 12345678</p><div class="w-10 h-1 bg-brand-500 mx-auto mt-3 rounded-full"></div></div>
+                            <div class="grid grid-cols-2 gap-4 text-xs mb-6"><div><p class="text-slate-400 font-bold uppercase text-[9px]">Jabatan</p><p id="cardJab" class="font-bold text-slate-700">Guru Mapel</p></div><div><p class="text-slate-400 font-bold uppercase text-[9px]">Status</p><p class="font-bold text-green-600 flex items-center gap-1"><i class="fas fa-check-circle"></i> Aktif</p></div></div>
+                            <div class="bg-white p-2 rounded-xl shadow-inner border border-slate-100 flex items-center justify-center"><div id="qrcode"></div></div>
+                            <p class="text-[9px] text-center text-slate-400 mt-2 font-medium">Scan QR untuk verifikasi kepegawaian digital.</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex gap-4"><button onclick="downloadIDCard()" class="btn-primary shadow-xl"><i class="fas fa-download"></i> Simpan Kartu</button></div>
+                </div>
+
+                <!-- ADMIN -->
+                <div id="page-admin" class="fade-enter hidden">
+                    <div class="flex flex-col md:flex-row gap-3 mb-6 items-center">
+                        <select id="limitAdm" onchange="changeAdmLimit(this.value)" class="input-field w-24 text-xs font-bold py-2 cursor-pointer h-10">
+                            <option value="5">5 Baris</option>
+                            <option value="10" selected>10 Baris</option>
+                            <option value="20">20 Baris</option>
+                            <option value="50">50 Baris</option>
+                            <option value="all">Semua</option>
+                        </select>
+                        <select id="admFilterCat" class="input-field w-full md:w-48 cursor-pointer h-10"><option value="">Semua Kategori</option></select>
+                        <div class="flex-1 flex gap-2 w-full">
+                            <input type="text" id="admSearch" placeholder="Cari NIP/Nama Guru..." class="input-field h-10">
+                            <button onclick="admLoad(1)" class="btn-primary whitespace-nowrap h-10">Cari</button>
+                            <button onclick="exportTableToExcel('admTable', 'laporan_arsip')" class="bg-green-600 text-white px-4 rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2 h-10" title="Download Excel"><i class="fas fa-file-excel"></i> <span class="hidden md:inline">Export</span></button>
+                        </div>
+                    </div>
+                    <div class="card overflow-hidden border-t-4 border-red-500">
+                        <div class="overflow-x-auto min-h-[400px]">
+                            <table class="w-full" id="admTable">
+                                <thead class="bg-slate-50 dark:bg-slate-800"><tr><th class="pl-6">Guru</th><th>Dokumen</th><th>Waktu</th><th class="text-center">Status</th><th class="text-right pr-6">Aksi</th></tr></thead>
+                                <tbody id="admBody" class="bg-white dark:bg-slate-800"></tbody>
+                            </table>
+                        </div>
+                        <div id="admPag" class="p-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 items-center"></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- MOBILE MENU -->
+        <div id="mobileMenu" class="fixed inset-0 z-40 bg-slate-900/95 backdrop-blur-sm hidden p-6 text-white flex flex-col">
+            <div class="flex justify-between items-center mb-8"><span class="font-bold text-lg">Menu</span><button onclick="document.getElementById('mobileMenu').classList.add('hidden')"><i class="fas fa-times text-2xl"></i></button></div>
+            <div class="space-y-4">
+                <button onclick="nav('dashboard');toggleMob()" class="w-full text-left py-3 text-lg font-medium border-b border-slate-700">Dashboard</button>
+                <button onclick="nav('upload');toggleMob()" class="w-full text-left py-3 text-lg font-medium border-b border-slate-700">Upload</button>
+                <button onclick="nav('arsip');toggleMob()" class="w-full text-left py-3 text-lg font-medium border-b border-slate-700">Arsip Saya</button>
+                <button onclick="nav('profil');toggleMob()" class="w-full text-left py-3 text-lg font-medium border-b border-slate-700">Biodata</button>
+                <button onclick="nav('idcard');toggleMob()" class="w-full text-left py-3 text-lg font-medium border-b border-slate-700 text-yellow-300">Kartu Digital</button>
+                <button onclick="logout()" class="w-full text-center py-3 bg-red-600 rounded-xl font-bold mt-8">KELUAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycby4gf6YuRHNYUfoJ6sGjlyU4ScYdzc-mn4Jx9V6sKaXQVITOcsp1iScqBOVP9TlJQaL/exec'; 
+
+        const CATS = {
+            'Kepegawaian': ['SK CPNS', 'SK PNS', 'SK Kenaikan Pangkat (Terakhir)', 'SK Jabatan Fungsional', 'SK Kenaikan Gaji Berkala (KGB)', 'Kartu Pegawai (Karpeg)', 'Taspen', 'Karis/Karsu', 'SK Mutasi', 'SK Pensiun'],
+            'Berkas E-Kinerja': ['SKP Tahunan', 'Laporan Kinerja Bulanan', 'Bukti Dukung Kinerja', 'Evaluasi Kinerja', 'Dokumen Refleksi Tindak Lanjut', 'Sertifikat Topik PMM', 'Rencana Hasil Kerja (RHK)'],
+            'Pendidikan': ['Ijazah SD', 'Ijazah SMP', 'Ijazah SMA', 'Ijazah S1', 'Transkrip S1', 'Ijazah S2', 'Transkrip S2', 'Ijazah S3 (Doktoral)', 'Transkrip S3', 'Sertifikat Pendidik (Serdik)', 'Akta Mengajar', 'Ijazah PPG'],
+            'Diklat & Prestasi': ['Sertifikat Pelatihan', 'Sertifikat Workshop', 'Sertifikat Seminar', 'Piagam Penghargaan', 'Surat Tugas Diklat', 'Sertifikat Guru Penggerak', 'Sertifikat Asesor', 'Sertifikat Lain-Lain'],
+            'Karya Ilmiah': ['Jurnal Ilmiah', 'Artikel Populer', 'Buku Ber-ISBN', 'Laporan PTK', 'Modul Pembelajaran', 'Diktat'],
+            'Tugas Tambahan': ['SK Pembagian Tugas Mengajar', 'SK Wali Kelas', 'SK Kepala Laboratorium', 'SK Kepala Perpustakaan', 'SK Pembina Ekstrakurikuler', 'SK Panitia Kegiatan', 'SK Guru Wali', 'SK Kepala Sekolah', 'SK Lain-Lain'],
+            'Data Pribadi': ['KTP', 'Kartu Keluarga', 'Akte Kelahiran', 'Akte Kelahiran Anak', 'NPWP', 'BPJS Kesehatan', 'BPJS Ketenagakerjaan', 'Buku Nikah', 'Pas Foto', 'Buku Rekening']
+        };
+
+        let STATE = { 
+            token: null, user: null, docs: [], 
+            sort: { key: null, asc: true },
+            chart: null,
+            // Pagination States
+            myPage: 1, myLimit: 10,
+            admPage: 1, admLimit: 10
+        };
+
+        window.onload = () => {
+            updateDate(); initTheme();
+            const s = localStorage.getItem('SIAD_V4_SECURE');
+            if(s) { const d = JSON.parse(s); if(new Date().getTime() < d.exp) { STATE.token=d.token; STATE.user=d.user; init(); } }
+            
+            const sel = document.getElementById('upCat'); const selMy = document.getElementById('filterCatMy'); const selAdm = document.getElementById('admFilterCat');
+            Object.keys(CATS).forEach(k => { sel.innerHTML+=`<option value="${k}">${k}</option>`; selMy.innerHTML+=`<option value="${k}">${k}</option>`; selAdm.innerHTML+=`<option value="${k}">${k}</option>`; });
+        };
+
+        function updateDate() {
+            const d = new Date();
+            const opt = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
+            document.getElementById('currentDate').innerText = d.toLocaleDateString('id-ID', opt).toUpperCase();
+        }
+
+        function initTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); document.getElementById('darkIcon').className='fas fa-sun'; } else { document.documentElement.classList.remove('dark'); document.getElementById('darkIcon').className='fas fa-moon'; }
+        }
+        function toggleDark() { if(document.documentElement.classList.contains('dark')){document.documentElement.classList.remove('dark');localStorage.theme='light';document.getElementById('darkIcon').className='fas fa-moon';}else{document.documentElement.classList.add('dark');localStorage.theme='dark';document.getElementById('darkIcon').className='fas fa-sun';} }
+
+        // --- PASSWORD TOGGLE ---
+        function togglePass() {
+            const field = document.getElementById('loginPass');
+            const icon = document.getElementById('iconPass');
+            if(field.type === 'password') { field.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            else { field.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        }
+        function forgotPass() { Swal.fire('Lupa Kata Sandi?', 'Silakan hubungi Administrator Sekolah (TU) untuk melakukan reset password.', 'info'); }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnLogin'); btn.innerHTML='<div class="loader"></div>';
+            try {
+                const res = await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'login', nip:document.getElementById('loginNip').value, password:document.getElementById('loginPass').value})});
+                const d = await res.json();
+                if(d.status==='success') {
+                    STATE.token=d.token; STATE.user=d.user; localStorage.setItem('SIAD_V4_SECURE', JSON.stringify({token:d.token, user:d.user, exp:new Date().getTime()+86400000}));
+                    init(); Swal.fire({icon:'success',title:'Berhasil Masuk!',text:`Selamat datang, ${d.user.nama}`,timer:2000,showConfirmButton:false,toast:true,position:'top-end'});
+                } else Swal.fire('Gagal',d.message,'error');
+            } catch(e) { Swal.fire('Error','Koneksi gagal','error'); }
+            btn.innerHTML='MASUK APLIKASI';
+        }
+
+        async function logout() {
+            Swal.fire({title:'Keluar?',text:"Akhiri sesi ini.",icon:'warning',showCancelButton:true,confirmButtonColor:'#d33',confirmButtonText:'Ya, Keluar'}).then(async(r)=>{if(r.isConfirmed){ try{if(STATE.token)await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'logout',token:STATE.token})})}catch(e){} localStorage.removeItem('SIAD_V4_SECURE');location.reload();}});
+        }
+
+        function init() {
+            document.getElementById('view-login').classList.add('hidden'); document.getElementById('app-layout').classList.remove('hidden');
+            const u = STATE.user; const foto = u.foto || 'https://ui-avatars.com/api/?background=random&name='+u.nama;
+            document.getElementById('sideNama').innerText=u.nama; document.getElementById('sideNip').innerText=u.nip; document.getElementById('sideFoto').src=foto;
+            document.getElementById('headerNama').innerText=u.nama; document.getElementById('headerFoto').src=foto; document.getElementById('dashName').innerText=u.nama.split(' ')[0];
+            if(u.role==='admin') document.getElementById('menuAdmin').classList.remove('hidden');
+            nav('dashboard'); loadDocs();
+        }
+
+        function nav(page) {
+            document.querySelectorAll('[id^="page-"]').forEach(e=>e.classList.add('hidden')); document.getElementById('page-'+page).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); const btn=document.getElementById('nav-'+page); if(btn)btn.classList.add('active');
+            document.getElementById('headerTitle').innerText = {'dashboard':'Dashboard','upload':'Upload','arsip':'Arsip Saya','profil':'Biodata','admin':'Admin Control','idcard':'ID Card'}[page];
+            if(page==='profil') loadBiodata(); if(page==='admin') admLoad(1); if(page==='idcard') generateIDCard();
+        }
+        function toggleMob() { document.getElementById('mobileMenu').classList.add('hidden'); }
+
+        // --- ID CARD ---
+        function generateIDCard() {
+            const u = STATE.user;
+            document.getElementById('cardNama').innerText=u.nama; document.getElementById('cardNip').innerText="NIP. "+u.nip; document.getElementById('cardFoto').src=u.foto || 'https://ui-avatars.com/api/?name='+u.nama;
+            fetch(API_URL,{method:'POST',body:JSON.stringify({action:'getProfile',token:STATE.token,nip:u.nip})}).then(r=>r.json()).then(d=>{if(d.status==='success')document.getElementById('cardJab').innerText=d.data.jabatan||'Guru';});
+            document.getElementById('qrcode').innerHTML=""; new QRCode(document.getElementById("qrcode"),{text:"SIAD-16 VERIFIED: "+u.nip,width:80,height:80,colorDark:"#1e293b",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+        }
+        function downloadIDCard() {
+            const card=document.getElementById('cardArea'); Swal.fire({title:'Memproses...',didOpen:()=>Swal.showLoading()});
+            html2canvas(card,{scale:3,useCORS:true}).then(c=>{const l=document.createElement('a');l.download=`ID_CARD_${STATE.user.nip}.png`;l.href=c.toDataURL("image/png");l.click();Swal.close();Swal.fire('Tersimpan!','Cek galeri Anda','success');});
+        }
+
+        // --- UPLOAD ---
+        function loadSubCat(val) { const s=document.getElementById('upJenis'); s.innerHTML='<option value="">-- Pilih Jenis --</option>'; s.disabled=!val; if(val&&CATS[val])CATS[val].forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`); }
+        function valFile(i) { const f=i.files[0]; const a=['application/pdf','image/jpeg','image/png','image/jpg']; if(f){if(f.size>2097152){Swal.fire('Terlalu Besar','Maks 2MB','warning');i.value='';}else if(!a.includes(f.type)){Swal.fire('Format Salah','PDF/JPG only','warning');i.value='';}else document.getElementById('fileName').innerText=f.name;} }
+        async function doUpload(e) {
+            e.preventDefault(); const btn=document.getElementById('btnUp'); btn.innerHTML='<div class="loader"></div> Uploading...'; btn.disabled=true;
+            const f=document.getElementById('upFile').files[0]; if(!f){btn.innerHTML='SIMPAN DOKUMEN';btn.disabled=false;return Swal.fire('Pilih file dulu','','warning');}
+            const r=new FileReader(); r.readAsDataURL(f); r.onload=async()=>{
+                try{ await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'upload',token:STATE.token,nip:STATE.user.nip,nama:STATE.user.nama,grupKategori:document.getElementById('upCat').value,jenisBerkas:document.getElementById('upJenis').value,keterangan:escapeHtml(document.getElementById('upKet').value),fileBase64:r.result.split(',')[1],fileMimeType:f.type,originalFileName:f.name,fileExtension:f.name.split('.').pop()})});
+                Swal.fire('Berhasil','Tersimpan','success'); document.getElementById('formUpload').reset(); document.getElementById('fileName').innerText="Belum ada file"; loadDocs(); nav('arsip'); }catch(e){Swal.fire('Gagal','Error upload','error');}
+                btn.innerHTML='SIMPAN DOKUMEN'; btn.disabled=false;
+            };
+        }
+
+        // --- DATA & PAGINATION LOGIC ---
+        
+        // 1. ARSIP SAYA (Client Side Pagination)
+        async function loadDocs() {
+            const res = await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'getArsip', token:STATE.token, nip:STATE.user.nip})});
+            const d = await res.json();
+            if(d.status==='success') { STATE.docs=d.data; renderMyDocs(); updateStatsAndChart(d.data); }
+        }
+
+        function changeMyLimit(val) {
+            STATE.myLimit = val === 'all' ? 100000 : parseInt(val);
+            STATE.myPage = 1; // Reset ke hal 1
+            renderMyDocs();
+        }
+
+        function changeMyPage(newPage) {
+            STATE.myPage = newPage;
+            renderMyDocs();
+        }
+
+        function sortDocs(key) {
+            if(STATE.sort.key===key)STATE.sort.asc=!STATE.sort.asc; else{STATE.sort.key=key;STATE.sort.asc=true;}
+            renderMyDocs();
+        }
+
+        function renderMyDocs() {
+            const term = document.getElementById('searchMy').value.toLowerCase();
+            const cat = document.getElementById('filterCatMy').value;
+            const b = document.getElementById('bodyMyDocs');
+            let html = '';
+            
+            // 1. Filter
+            let data = STATE.docs.filter(x => {
+                const matchText = x.jenis.toLowerCase().includes(term) || x.keterangan.toLowerCase().includes(term);
+                const matchCat = cat === "" || x.kategori === cat;
+                return matchText && matchCat;
+            });
+            
+            // 2. Sort
+            if(STATE.sort.key) {
+                data.sort((a,b) => {
+                    const vA=a[STATE.sort.key].toLowerCase(), vB=b[STATE.sort.key].toLowerCase();
+                    return STATE.sort.asc ? (vA<vB?-1:1) : (vA>vB?-1:1);
+                });
+            }
+
+            // 3. Paginate
+            const totalItems = data.length;
+            const totalPages = Math.ceil(totalItems / STATE.myLimit);
+            if (STATE.myPage > totalPages) STATE.myPage = totalPages > 0 ? totalPages : 1;
+            
+            const start = (STATE.myPage - 1) * STATE.myLimit;
+            const end = start + STATE.myLimit;
+            const pagedData = data.slice(start, end);
+
+            // Render Table
+            if(pagedData.length === 0) document.getElementById('emptyMyDocs').classList.remove('hidden');
+            else {
+                document.getElementById('emptyMyDocs').classList.add('hidden');
+                pagedData.forEach(x => {
+                    const st = x.status=='Verified'?'<span class="text-green-700 bg-green-100 px-2 py-1 rounded text-[10px] font-bold border border-green-200">VALID</span>':'<span class="text-yellow-700 bg-yellow-100 px-2 py-1 rounded text-[10px] font-bold border border-yellow-200">PROSES</span>';
+                    const dl = x.download?`<a href="${x.download}" target="_blank" class="bg-slate-100 text-slate-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition"><i class="fas fa-download"></i></a>`:'';
+                    html+=`<tr class="hover:bg-slate-50 dark:hover:bg-slate-700 transition border-b border-slate-100 dark:border-slate-700"><td class="pl-6 py-4"><div class="font-bold text-slate-700 dark:text-slate-200 text-sm">${escapeHtml(x.jenis)}</div><div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${escapeHtml(x.keterangan)}</div></td><td><span class="text-[10px] font-bold uppercase text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">${escapeHtml(x.kategori)}</span></td><td class="text-xs font-mono text-slate-500 dark:text-slate-400">${x.waktu}</td><td class="text-center">${st}</td><td class="text-right pr-6"><div class="flex items-center justify-end gap-2"><a href="${x.link}" target="_blank" class="btn-view" title="Lihat"><i class="fas fa-eye"></i></a>${dl}<button onclick="reqDel('${x.fileId}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition" title="Hapus"><i class="fas fa-trash"></i></button></div></td></tr>`;
+                });
+            }
+            b.innerHTML = html;
+
+            // Render Pagination Buttons (Arsip Saya)
+            renderPaginationControls('myDocsPag', STATE.myPage, totalPages, 'changeMyPage');
+        }
+
+        // 2. ADMIN (Server Side Pagination)
+        function changeAdmLimit(val) {
+            STATE.admLimit = val === 'all' ? 'all' : parseInt(val);
+            admLoad(1); // Reset to page 1
+        }
+
+        async function admLoad(page) {
+            STATE.admPage = page;
+            const s = document.getElementById('admSearch').value;
+            const c = document.getElementById('admFilterCat').value;
+            
+            const res = await fetch(API_URL, {method:'POST', body:JSON.stringify({
+                action:'getAdminFiles', token:STATE.token, nip:STATE.user.nip, 
+                page: page, 
+                limit: STATE.admLimit, // Send limit to backend
+                search: s, category: c
+            })});
+            const d = await res.json();
+            const b = document.getElementById('admBody');
+            let html = '';
+            
+            if (d.data.length === 0) {
+                b.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">Data tidak ditemukan</td></tr>';
+            } else {
+                d.data.forEach(x => {
+                    const btnVerif = x.status=='Pending'?`<button onclick="admAct('verify','${x.fileId}')" class="bg-green-600 text-white w-8 h-8 rounded-lg flex items-center justify-center shadow hover:bg-green-700 transition"><i class="fas fa-check"></i></button>`:'';
+                    const btnReject = x.status=='Pending'?`<button onclick="admAct('reject','${x.fileId}')" class="bg-yellow-500 text-white w-8 h-8 rounded-lg flex items-center justify-center shadow hover:bg-yellow-600 transition"><i class="fas fa-times"></i></button>`:'';
+                    const dl = x.download?`<a href="${x.download}" target="_blank" class="bg-slate-100 text-slate-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition"><i class="fas fa-download"></i></a>`:'';
+                    let statusBadge = x.status=='Verified'?'<span class="px-2 py-1 rounded text-[10px] font-bold bg-green-100 text-green-700 border border-green-200">VALID</span>':x.status.includes('Ditolak')?'<span class="px-2 py-1 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">TOLAK</span>':'<span class="px-2 py-1 rounded text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">PENDING</span>';
+                    html += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-700 transition border-b border-slate-100 dark:border-slate-700"><td class="pl-6 py-4"><div class="font-bold text-sm text-slate-800 dark:text-slate-200">${escapeHtml(x.nama)}</div><div class="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">${escapeHtml(x.nip)}</div></td><td><div class="text-xs font-bold text-slate-700 dark:text-slate-300">${escapeHtml(x.jenis)}</div><div class="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[150px]">${escapeHtml(x.keterangan)}</div></td><td class="text-[10px] font-mono text-slate-500 dark:text-slate-400">${x.waktu}</td><td class="text-center">${statusBadge}</td><td class="text-right pr-6"><div class="flex items-center justify-end gap-2"><a href="${x.link}" target="_blank" class="bg-brand-50 text-brand-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-brand-100 transition" title="Lihat"><i class="fas fa-eye"></i></a>${dl} ${btnVerif} ${btnReject}<button onclick="admAct('delete','${x.fileId}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 flex items-center justify-center transition ml-1"><i class="fas fa-trash"></i></button></div></td></tr>`;
+                });
+                b.innerHTML = html;
+            }
+            
+            // Render Pagination Buttons (Admin)
+            renderPaginationControls('admPag', d.pagination.current, d.pagination.pages, 'admLoad');
+        }
+
+        // --- HELPER: RENDER PAGINATION BUTTONS ---
+        function renderPaginationControls(containerId, currentPage, totalPages, callbackName) {
+            const container = document.getElementById(containerId);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = `<span class="text-xs font-bold text-slate-400 mr-2">Hal ${currentPage}/${totalPages}</span>`;
+            
+            // Prev Button
+            html += `<button onclick="${callbackName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="page-btn"><i class="fas fa-chevron-left"></i></button>`;
+
+            // Numbered Buttons (Logic Smart: Show only window around current)
+            // Tampilkan: 1, ..., curr-1, curr, curr+1, ..., last
+            let pagesToShow = [];
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pagesToShow.push(i);
+            } else {
+                if (currentPage <= 4) {
+                    pagesToShow = [1, 2, 3, 4, 5, '...', totalPages];
+                } else if (currentPage >= totalPages - 3) {
+                    pagesToShow = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                } else {
+                    pagesToShow = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+                }
+            }
+
+            pagesToShow.forEach(p => {
+                if (p === '...') {
+                    html += `<span class="px-2 text-xs text-slate-400">...</span>`;
+                } else {
+                    const active = p === currentPage ? 'active' : '';
+                    html += `<button onclick="${callbackName}(${p})" class="page-btn ${active}">${p}</button>`;
+                }
+            });
+
+            // Next Button
+            html += `<button onclick="${callbackName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="page-btn"><i class="fas fa-chevron-right"></i></button>`;
+            
+            container.innerHTML = html;
+        }
+
+        async function admAct(act, id) {
+            let title, text, icon, confirmColor, confirmText;
+
+            if (act === 'verify') {
+                title = 'Verifikasi Dokumen?';
+                text = 'Dokumen akan ditandai valid.';
+                icon = 'question';
+                confirmColor = '#10b981'; // Green
+                confirmText = 'Ya, Verifikasi';
+            } else if (act === 'reject') {
+                title = 'Tolak Dokumen?';
+                text = 'User harus mengupload ulang.';
+                icon = 'warning';
+                confirmColor = '#f59e0b'; // Yellow/Orange
+                confirmText = 'Ya, Tolak';
+            } else if (act === 'delete') {
+                title = 'Hapus Permanen?';
+                text = 'Data tidak bisa dikembalikan!';
+                icon = 'error';
+                confirmColor = '#ef4444'; // Red
+                confirmText = 'Ya, Hapus';
+            }
+
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: confirmColor,
+                cancelButtonColor: '#64748b',
+                confirmButtonText: confirmText,
+                cancelButtonText: 'Batal'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({title: 'Memproses...', didOpen: () => Swal.showLoading()});
+                    try {
+                        const res = await fetch(API_URL, {
+                            method: 'POST', 
+                            body: JSON.stringify({
+                                action: 'adminAction', 
+                                token: STATE.token, 
+                                nip: STATE.user.nip, 
+                                fileId: id, 
+                                subAction: act
+                            })
+                        });
+                        const d = await res.json();
+                        
+                        if (d.status === 'success') {
+                            Swal.fire({
+                                icon: 'success', 
+                                title: 'Berhasil!', 
+                                text: d.message, 
+                                timer: 1500, 
+                                showConfirmButton: false
+                            });
+                            admLoad(STATE.admPage);
+                        } else {
+                            Swal.fire('Gagal', d.message, 'error');
+                        }
+                    } catch (e) {
+                        Swal.fire('Error', 'Gagal menghubungi server', 'error');
+                    }
+                }
+            });
+        }
+
+        function updateStatsAndChart(data) {
+            document.getElementById('stTotal').innerText=data.length; document.getElementById('stVerif').innerText=data.filter(x=>x.status=='Verified').length; document.getElementById('stPend').innerText=data.filter(x=>x.status=='Pending').length;
+            const c={}; data.forEach(d=>{c[d.kategori]=(c[d.kategori]||0)+1}); const l=Object.keys(c); const v=Object.values(c);
+            if(STATE.chart)STATE.chart.destroy(); const ctx=document.getElementById('dashChart').getContext('2d');
+            STATE.chart=new Chart(ctx,{type:'bar',data:{labels:l,datasets:[{label:'Jml',data:v,backgroundColor:'#3b82f6',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#e2e8f0'}},x:{grid:{display:false}}}}});
+        }
+
+        function reqDel(id){Swal.fire({title:'Hapus?',icon:'question',showCancelButton:true}).then(r=>{if(r.isConfirmed){fetch(API_URL,{method:'POST',body:JSON.stringify({action:'deleteRequest',token:STATE.token,userId:STATE.user.nip,fileId:id,alasan:'User'})}).then(()=>{Swal.fire('Diajukan','Tunggu Admin','success')});}});}
+        function exportTableToExcel(tid,fn='export'){const t=document.getElementById(tid);const r=t.querySelectorAll('tr');let c=[];for(let i=0;i<r.length;i++){const row=[],cols=r[i].querySelectorAll('td,th');for(let j=0;j<cols.length-1;j++)row.push('"'+cols[j].innerText.replace(/(\r\n|\n|\r)/gm," ").trim()+'"');c.push(row.join(","));}const b=new Blob([c.join("\n")],{type:"text/csv"});const l=document.createElement("a");l.download=fn+".csv";l.href=window.URL.createObjectURL(b);l.style.display="none";document.body.appendChild(l);l.click();document.body.removeChild(l);}
+        function escapeHtml(t){if(!t)return t;return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+        async function loadBiodata(){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action:'getProfile',token:STATE.token,nip:STATE.user.nip})});const d=await r.json();if(d.status==='success'){const u=d.data;document.getElementById('dispNama').innerText=u.nama;document.getElementById('dispNip').innerText="NIP. "+u.nip;document.getElementById('eNip').value=u.nip;document.getElementById('profImg').src=u.foto||'https://ui-avatars.com/api/?name='+u.nama;['Nama','Tempat','Tgl','Jab','Pang','Wa','Email','Nuptk','Jk','Agama','Alamat'].forEach(k=>{const el=document.getElementById('e'+k);const key=k.toLowerCase().replace('tgl','tanggalLahir').replace('pang','pangkat').replace('jab','jabatan').replace('nama','nama').replace('tempat','tempatLahir');if(el)el.value=u[key]||'';});}}
+        async function saveProfil(){const btn=document.getElementById('btnSaveProf');btn.innerHTML='<div class="loader"></div>';btn.disabled=true;const f=document.getElementById('eFoto').files[0];const send=async(foto)=>{const pay={action:'updateProfile',token:STATE.token,nip:STATE.user.nip,fotoBase64:foto,newPassword:document.getElementById('ePass').value};['Nama','Tempat','Tgl','Jab','Pang','Wa','Email','Nuptk','Jk','Agama','Alamat'].forEach(k=>{const key=k.toLowerCase().replace('tgl','tanggalLahir').replace('pang','pangkat').replace('jab','jabatan').replace('nama','nama').replace('tempat','tempatLahir');pay[key]=escapeHtml(document.getElementById('e'+k).value);});await fetch(API_URL,{method:'POST',body:JSON.stringify(pay)});Swal.fire('Sukses','Tersimpan','success');btn.innerText='SIMPAN PERUBAHAN';btn.disabled=false;document.getElementById('sideNama').innerText=pay.nama;document.getElementById('headerNama').innerText=pay.nama;document.getElementById('dashName').innerText=pay.nama.split(' ')[0];document.getElementById('dispNama').innerText=pay.nama;};if(f){const r=new FileReader();r.readAsDataURL(f);r.onload=async()=>{await send(r.result.split(',')[1]);};}else await send(null);}
+    </script>
+</body>
+</html>
